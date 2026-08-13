@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: ai.bloompath
+testFramework: junit
+sourceLanguage: kotlin
+buildTool: gradle_kotlin
+features: [ app-name, cache-caffeine, config4k, data, data-r2dbc, gradle, h2, http-client, jdbc-hikari, junit, kotlin, kotlin-application, kotlin-extension-functions, ksp, langchain4j-ollama, micronaut-aot, micronaut-build, micronaut-configuration-validation-gradle-plugin, micronaut-http-validation, netty-server, problem-json, r2dbc, readme, security, security-processor, serialization-jackson, shade, slf4j-simple, static-resources, test-resources, validation ]

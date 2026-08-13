@@ -193,9 +193,9 @@ The test suite and application must demonstrate explicit handling of the followi
     │   │       │   └── QueryResponse.kt
     │   │       ├── service/
     │   │       │   ├── QaEngineService.kt          # Orchestration pipeline logic
-    │   │       │   ├── IntentParserService.kt               # OpenAI API Client / Structured Parser
-                    ├── IntentParserService.kt               # OpenAI API Client / Structured Parser
-    │   │       │   └── DatabaseQueryService.kt    # Parameterized H2 execution & provenance extraction
+    │   │       │   ├── IntentParserService.kt      # Ollama API Client / Structured Parser / Query Generator
+                    ├── AnswerSynthesizerService.kt # Ollama API Client / Answer Generator
+    │   │       │   └── DatabaseQueryService.kt     # Parameterized H2 execution & provenance extraction
     │   │       └── config/
     │   │           └── DatabaseInitializer.kt      # Seeds H2 on startup (@EventListener / StartupEvent)
     │   └── resources/

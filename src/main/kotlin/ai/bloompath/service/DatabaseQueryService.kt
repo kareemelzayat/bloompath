@@ -7,12 +7,6 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import javax.sql.DataSource
 
-/** The rows and provenance produced by a parameterized database query. */
-data class DatabaseQueryResult(
-    val rows: List<Map<String, Any?>>,
-    val provenance: List<ProvenanceRecord>
-)
-
 /**
  * Executes read-only SQL. Provenance calculation is delegated so this class
  * does not need to know anything about application tables or key names.
@@ -47,13 +41,16 @@ class DatabaseQueryService(
         }
     }
 
-    fun executeQuery(sql: String, parameters: List<Any?> = emptyList()): DatabaseQueryResult =
-        execute(sql, parameters)
-
     private fun bindParameters(statement: PreparedStatement, parameters: List<Any?>) {
         parameters.forEachIndexed { index, value -> statement.setObject(index + 1, value) }
     }
 }
+
+/** The rows and provenance produced by a parameterized database query. */
+data class DatabaseQueryResult(
+    val rows: List<Map<String, Any?>>,
+    val provenance: List<ProvenanceRecord>
+)
 
 data class QuerySnapshot(
     val rows: List<Map<String, Any?>>,

@@ -7,6 +7,7 @@ import ai.bloompath.dto.QueryRequest
 import ai.bloompath.dto.QueryResponse
 import ai.bloompath.dto.QueryStatus
 import jakarta.inject.Singleton
+import org.slf4j.LoggerFactory
 
 /** Coordinates intent parsing, grounded execution, provenance, and phrasing. */
 @Singleton
@@ -38,28 +39,35 @@ class QaEngineService(
             IntentAction.EXECUTE -> {
                 val sql = decision.sql ?: error("EXECUTE intent did not include SQL")
                 val result = databaseQueryService.execute(sql, decision.parameters)
-                val context = buildRetrievedContext(question, result.rows)
+                val context = buildRetrievedContext(question, sql, result)
+                LOG.info("Generated query: ${decision.sql}")
+                val answer = answerSynthesisService.synthesize(context).answer
                 QueryResponse(
                     status = QueryStatus.SUCCESS,
                     question = question,
-                    answer = answerSynthesisService.synthesize(context).answer,
+                    answer = answer,
                     provenance = result.provenance
                 )
             }
         }
     }
 
-    private fun buildRetrievedContext(question: String, rows: List<Map<String, Any?>>): String =
+    private fun buildRetrievedContext(question: String, sql: String, queryResult: DatabaseQueryResult): String =
         """
         QUESTION:
         $question
 
+        SQL QUERY:
+        $sql
+        
         RETRIEVED DATABASE ROWS:
-        ${rows.joinToString(separator = "\n")}
+        ${queryResult.rows.joinToString(separator = "\n")}
         """.trimIndent()
 
     private companion object {
         const val REFUSAL_ANSWER =
             "I cannot answer this question. Financial and budget data are not tracked in BloomPath operational records."
+
+        val LOG = LoggerFactory.getLogger(QaEngineService::class.java)
     }
 }

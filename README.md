@@ -305,8 +305,8 @@ Generative assistance covered the implementation surface of the PoC, including:
 
 - **Complex joins:** Local LLM reasoning may be unreliable for complex queries involving four or more table joins.
 - **Runtime SQL safety:** Safety currently relies on parameterized prepared statements rather than AST-based parsers that explicitly block write operations at the syntax-tree level.
-- **Conversational context:** The service does not maintain multi-turn conversational context memory; each query is processed independently.
 - **Explicit domain model:** The code does not currently encode domain knowledge through domain classes that define clear domain boundaries and relationships. This was a deliberate time-conscious compromise for the challenge and is acceptable for a PoC, but a production system must introduce an explicit domain model to make those boundaries and relationships clear, enforceable, and maintainable.
+- **Conversational context:** The service does not maintain multi-turn conversational context memory; each query is processed independently.
 
 ## Next Steps (Production Roadmap)
 
@@ -315,4 +315,7 @@ Generative assistance covered the implementation surface of the PoC, including:
 - Add connection pooling with HikariCP and query caching with Redis.
 - Build an automated Text-to-SQL evaluation benchmark suite.
 - Make the project fully non-blocking with Kotlin Coroutines and R2DBC. In the current implementation, each request-handling thread remains blocked until the LLM and database responses return; a reactive non-blocking design would free those threads to do more work and improve scalability.
+- Add structured application logging and audit logging for requests, generated Text-to-SQL statements, safety decisions, execution outcomes, and provenance extraction, with appropriate redaction for sensitive client data.
+- Add comprehensive API documentation, such as an OpenAPI/Swagger contract with endpoint descriptions, request and response schemas, status semantics, and example payloads.
+- Add code-level Javadocs/KDocs for public controllers, services, DTOs, AI-service contracts, database components, and provenance rules so the system’s operational and architectural assumptions are discoverable in the codebase.
 - Dockerize the service.

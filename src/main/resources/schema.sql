@@ -1,26 +1,26 @@
 -- BloomPath operational data model and deterministic PoC seed data.
 
-CREATE TABLE clients (
+CREATE TABLE IF NOT EXISTS clients (
     client_id VARCHAR(36) PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,
     date_of_birth DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE programs (
+CREATE TABLE IF NOT EXISTS programs (
     program_id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT
 );
 
-CREATE TABLE staff (
+CREATE TABLE IF NOT EXISTS staff (
     staff_id VARCHAR(36) PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,
     role VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE case_statuses (
+CREATE TABLE IF NOT EXISTS case_statuses (
     status_id VARCHAR(36) PRIMARY KEY,
     client_id VARCHAR(36) NOT NULL,
     program_id VARCHAR(36) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE case_statuses (
     FOREIGN KEY (assigned_staff_id) REFERENCES staff(staff_id)
 );
 
-CREATE TABLE service_activities (
+CREATE TABLE IF NOT EXISTS service_activities (
     activity_id VARCHAR(36) PRIMARY KEY,
     client_id VARCHAR(36) NOT NULL,
     program_id VARCHAR(36) NOT NULL,

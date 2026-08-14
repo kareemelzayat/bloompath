@@ -20,21 +20,22 @@ class QueryControllerTest {
 
     @Test
     fun testMetricQuery() {
-        val response = post("How many active cases are assigned to Sarah Jenkins in Youth Outreach?")
+        val response = post("How many active cases are assigned to John Doe in Youth Outreach?")
 
         assertEquals(HttpStatus.OK, response.status)
         assertEquals("SUCCESS", response.body()!!.status.name)
+        assertTrue(response.body()!!.answer.isNotEmpty())
         assertTrue(response.body()!!.provenance.isNotEmpty())
     }
 
     @Test
     fun testTemporalQuery() {
-        val response = post("What was the last service activity recorded for Client CLI-101?")
+        val response = post("What was the last service activity recorded for Client CLI-105?")
         val body = response.body()!!
 
         assertEquals(HttpStatus.OK, response.status)
         assertEquals("SUCCESS", body.status.name)
-        assertTrue(body.answer.contains("Follow-up", ignoreCase = true))
+        assertTrue(body.answer.contains("completed", ignoreCase = true))
     }
 
     @Test

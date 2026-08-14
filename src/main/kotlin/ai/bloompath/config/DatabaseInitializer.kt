@@ -1,5 +1,6 @@
 package ai.bloompath.config
 
+import io.micronaut.context.annotation.Context
 import io.micronaut.context.event.StartupEvent
 import io.micronaut.data.connection.annotation.Connectable
 import io.micronaut.runtime.event.annotation.EventListener
@@ -8,6 +9,7 @@ import java.sql.Connection
 import javax.sql.DataSource
 
 /** Creates and seeds the PoC database once the JDBC datasource is available. */
+@Context
 @Singleton
 open class DatabaseInitializer(private val dataSource: DataSource) {
 
@@ -18,10 +20,9 @@ open class DatabaseInitializer(private val dataSource: DataSource) {
             ?.readText()
             ?: error("Database schema resource /schema.sql was not found")
 
-        dataSource.connection.use { connection ->
-            if (isInitialized(connection)) return
-            executeScript(connection, script)
-        }
+        val connection = dataSource.connection
+        executeScript(connection, script)
+        if (!isInitialized(connection)) error("Database schema was not initialized")
     }
 
     private fun isInitialized(connection: Connection): Boolean =

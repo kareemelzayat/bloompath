@@ -3,6 +3,7 @@ package ai.bloompath.service
 import ai.bloompath.dto.ProvenanceRecord
 import io.micronaut.transaction.annotation.Transactional
 import jakarta.inject.Singleton
+import org.slf4j.LoggerFactory
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import javax.sql.DataSource
@@ -20,6 +21,8 @@ class DatabaseQueryService(
 
     fun execute(sql: String, parameters: List<Any?> = emptyList()): DatabaseQueryResult {
         require(sql.isNotBlank()) { "SQL query must not be blank" }
+        LOG.info("Executing query: {}", sql)
+        LOG.info("Parameters: {}", parameters.joinToString())
 
         dataSource.connection.use { connection ->
             connection.prepareStatement(sql).use { statement ->
@@ -43,6 +46,10 @@ class DatabaseQueryService(
 
     private fun bindParameters(statement: PreparedStatement, parameters: List<Any?>) {
         parameters.forEachIndexed { index, value -> statement.setObject(index + 1, value) }
+    }
+
+    companion object {
+        val LOG = LoggerFactory.getLogger(DatabaseQueryService::class.java)
     }
 }
 

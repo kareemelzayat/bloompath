@@ -35,17 +35,29 @@ class QueryControllerTest {
 
         assertEquals(HttpStatus.OK, response.status)
         assertEquals("SUCCESS", body.status.name)
-        assertTrue(body.answer.contains("completed", ignoreCase = true))
+        assertTrue(body.answer.contains("Intake", ignoreCase = true))
     }
 
     @Test
     fun testCrossEntityQuery() {
-        val response = post("List all clients in Housing Support who have flagged or uncompleted notes?")
+        val response = post("List all clients in Housing Support who have flagged notes?")
         val body = response.body()!!
 
         assertEquals(HttpStatus.OK, response.status)
         assertEquals("SUCCESS", body.status.name)
         assertTrue(body.provenance.any { it.recordId == "CLI-103" })
+        assertTrue(body.provenance.any { it.recordId == "CLI-102" })
+    }
+
+    @Test
+    fun testCompoundQuery() {
+        val response = post("Can we know how many open cases we have for Aisha Patel, with Id: CLI-103? And how many programs is she enrolled to?")
+        val body = response.body()!!
+
+        assertEquals(HttpStatus.OK, response.status)
+        assertEquals("SUCCESS", body.status.name)
+        assertTrue(body.answer.contains("1", ignoreCase = true))
+        assertTrue(body.provenance.any { it.table == "case_statuses" })
     }
 
     @Test

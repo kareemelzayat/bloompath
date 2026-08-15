@@ -52,7 +52,7 @@ open class DatabaseQueryServiceTest {
             JOIN programs p ON p.program_id = cs.program_id
             WHERE cs.status = ? AND s.full_name = ? AND p.name = ?
             """.trimIndent(),
-            listOf("Active", "Sarah Jenkins", "Youth Outreach")
+            listOf("Active", "John Doe", "Youth Outreach")
         )
 
         assertEquals(1, result.rows.size)

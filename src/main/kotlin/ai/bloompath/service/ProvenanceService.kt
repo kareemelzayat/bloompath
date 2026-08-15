@@ -71,7 +71,7 @@ class JdbcProvenanceService(
 
         val contributorSql = AggregateQuery.contributorSql(sql, source, primaryKeys)
         connection.prepareStatement(contributorSql).use { statement ->
-            bindParameters(statement, parameters)
+            bindParameters(statement, AggregateQuery.contributorParameters(sql, contributorSql, parameters))
             statement.executeQuery().use { resultSet ->
                 val records = mutableListOf<ProvenanceRecord>()
                 while (resultSet.next()) {
@@ -140,6 +140,13 @@ private object AggregateQuery {
         }
         val projection = primaryKeys.joinToString(", ") { "${source.alias}.$it" }
         return "SELECT $projection $fromClause"
+    }
+
+    fun contributorParameters(sql: String, contributorSql: String, parameters: List<Any?>): List<Any?> {
+        val fromIndex = Regex("\\bfrom\\b", RegexOption.IGNORE_CASE).find(sql)!!.range.first
+        val skipped = sql.substring(0, fromIndex).count { it == '?' }
+        val used = contributorSql.count { it == '?' }
+        return parameters.drop(skipped).take(used)
     }
 
     data class Source(val table: String, val alias: String)

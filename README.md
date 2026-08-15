@@ -18,25 +18,38 @@ BloomPath is a grounded operational question-answering service for frontline wor
 The service separates probabilistic language understanding from deterministic data access and lineage extraction:
 
 ```text
-[Client POST /api/v1/query]
-              |
-              v
-[Step 1: Intent & SQL Parser]
-       [LangChain4j / Ollama]
-              |
-              v
-[Step 2: Parameterized SQL Execution]
-             [H2 via JDBC]
-              |
-              v
-[Step 3: Programmatic Provenance Extraction]
-       [100% Kotlin code-derived PK mapping]
-              |
-              v
-[Step 4: Grounded Answer Synthesis]
-              |
-              v
-       [Structured JSON Response]
+                   [ POST /api/v1/query ]
+                              │
+                              ▼
+            ┌───────────────────────────────────┐
+            │ 1. Intent Parsing & SQL Generation│ ◄── LLM with Structured Output (JSON)
+            └─────────────────┬─────────────────┘
+                              │
+                              │
+         ┌────────────────────┼────────────────────┐
+         ▼                    ▼                    ▼
+  (action: REFUSE)    (action: AMBIGUOUS)   (action: EXECUTE)
+         │                    │                    │
+         │                    │                    ▼
+         │                    │         ┌────────────────────────┐
+         │                    │         │ 2. SQL Query Execution │
+         │                    │         └───────────┬────────────┘
+         │                    │                     │ Returns Raw Rows
+         │                    │                     ▼
+         │                    │        ┌──────────────────────────┐
+         │                    │        │ 3. Provenance Extraction │
+         │                    │        └───────────┬──────────────┘
+         │                    │                    │ Returns used tables, fields, and record ids
+         │                    │                    ▼
+         │                    │        ┌───────────────────────────┐
+         │                    │        │    4. Answer Synthesis    │ ◄── LLM with Structured Output (JSON)
+         │                    │        └───────────┬───────────────┘
+         │                    │                    │
+         └────────────────────┴────────────────────┘
+                              │
+                              ▼
+                  [ Structured JSON Response ]
+
 ```
 
 The parser returns one of three explicit decisions. `QaEngineService` then short-circuits or continues the pipeline accordingly.

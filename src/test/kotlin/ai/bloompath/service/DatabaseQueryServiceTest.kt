@@ -28,12 +28,20 @@ open class DatabaseQueryServiceTest {
     fun tearDown() = databaseFixture.dropTable()
 
     @Test
-    fun `normal query returns provenance for dynamically discovered primary key`() {
+    fun `normal query deduplicates provenance for duplicate joined rows`() {
         val result = databaseQueryService.execute(
-            "SELECT record_key, description FROM provenance_test_records"
+            """
+            SELECT r.record_key, r.description
+            FROM provenance_test_records r
+            JOIN (
+                SELECT 'REC-001' AS record_key
+                UNION ALL
+                SELECT 'REC-001' AS record_key
+            ) duplicates ON duplicates.record_key = r.record_key
+            """.trimIndent()
         )
 
-        assertEquals(1, result.rows.size)
+        assertEquals(2, result.rows.size)
         assertEquals(
             setOf("provenance_test_records:REC-001"),
             result.provenance.map { "${it.table}:${it.recordId}" }.toSet()
@@ -48,17 +56,38 @@ open class DatabaseQueryServiceTest {
             """
             SELECT COUNT(*) AS active_count
             FROM case_statuses cs
-            JOIN staff s ON s.staff_id = cs.assigned_staff_id
+            JOIN clients c ON c.client_id = cs.client_id
             JOIN programs p ON p.program_id = cs.program_id
-            WHERE cs.status = ? AND s.full_name = ? AND p.name = ?
+            WHERE cs.status = ? AND c.full_name = ? AND p.name = ?
             """.trimIndent(),
             listOf("Active", "John Doe", "Youth Outreach")
         )
 
         assertEquals(1, result.rows.size)
-        assertEquals(2L, (rowValue(result.rows.single(), "active_count") as Number).toLong())
+        assertEquals(1L, (rowValue(result.rows.single(), "active_count") as Number).toLong())
         assertEquals(
             setOf("CAS-001", "CAS-002"),
+            result.provenance
+                .filter { it.table == "case_statuses" }
+                .map { it.recordId }
+                .toSet()
+        )
+    }
+
+    @Test
+    fun `compound aggregate query binds parameters from retained clauses`() {
+        val result = databaseQueryService.execute(
+            """
+            SELECT COUNT(CASE WHEN LOWER(cs.status) IN (?, ?, ?) THEN 1 END) AS open_cases
+            FROM case_statuses cs
+            WHERE cs.client_id = ?
+            """.trimIndent(),
+            listOf("active", "on hold", "pending review", "CLI-103")
+        )
+
+        assertEquals(1L, (rowValue(result.rows.single(), "open_cases") as Number).toLong())
+        assertEquals(
+            setOf("CAS-003", "CAS-007"),
             result.provenance
                 .filter { it.table == "case_statuses" }
                 .map { it.recordId }
